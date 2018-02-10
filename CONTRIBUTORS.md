@@ -1,0 +1,2 @@
+- Kickstarting the project:
+    - Mamy Ratsimbazafy (Numforge)
