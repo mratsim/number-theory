@@ -4,7 +4,7 @@
 proc binomialCoeff*(n, k: int): int =
   result = 1
   for i in 0 ..< k:
-    result *= (n-i) div (i + 1)
+    result = result * (n-i) div (i + 1)
 
 when isMainModule:
   assert binomialCoeff(4, 2) == 6
