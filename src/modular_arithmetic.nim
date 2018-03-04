@@ -134,7 +134,7 @@ template modulo*[T:SomeInteger](modulus: T, body: untyped): untyped =
     submod(a, b, `modulus`)
   template `*`(a, b: T): T =
     mulmod(a, b, `modulus`)
-  template `**`(a, b: T): T =
+  template `^`(a, b: T): T =
     expmod(a, b, `modulus`)
   template pow(a, b: T): T =
     expmod(a, b, `modulus`)
