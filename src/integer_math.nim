@@ -35,14 +35,13 @@ type
 proc ldiv(a, b: clong): ldiv_t {.importc: "ldiv", header: "<stdlib.h>".}
 proc lldiv(a, b: clonglong): lldiv_t {.importc: "lldiv", header: "<stdlib.h>".}
 
-proc divmod*(a, b: int32): tuple[quot, rem: clong] {.inline.}=
+proc divmod*[T: SomeSignedInt](a, b: T): tuple[quot, rem: T] {.inline.}=
   ## Compute quotient and reminder of integer division in a single operation
-  # TODO: changing clong to int32 poses an issue for some reason
-  cast[type result](ldiv(a,b))
 
-proc divmod*(a, b: int64): tuple[quot, rem: int64] {.inline.}=
-  ## Compute quotient and reminder of integer division in a single operation
-  cast[type result](lldiv(a,b))
+  when T.sizeof == 4: # 32-bit (int32, clong)
+    cast[type result](ldiv(a,b))
+  elif T.sizeof == 8: # 64-bit (int64, clong)
+    cast[type result](lldiv(a,b))
 
 proc divmod*[T: SomeUnsignedInt](a, b: T): tuple[quot, rem: T] {.inline.}=
   # There is no single instruction for unsigned ints

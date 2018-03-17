@@ -1,7 +1,7 @@
 # The MIT License (MIT)
 # Copyright (c) 2016 Mamy Ratsimbazafy
 
-from ./integer_math import isOdd
+from ./integer_math import isOdd, divmod
 
 proc addmod*[T: SomeInteger](a, b, m: T): T =
   ## Modular addition
@@ -92,7 +92,7 @@ proc invmod*[T:SomeInteger](a, m: T): T =
   # to avoid requiring signed integers
   # http://cacr.uwaterloo.ca/hac/about/chap14.pdf
 
-  # Starting from the binary extended GCD formula (Bezout identity),
+  # Starting from the extended GCD formula (Bezout identity),
   # `ax + by = gcd(x,y)`
   # with input x,y and outputs a, b, gcd
   # We assume a and m are coprimes, i.e. gcd is 1, otherwise no inverse
@@ -112,8 +112,7 @@ proc invmod*[T:SomeInteger](a, m: T): T =
 
   while b != 0.T:
     let
-      q = a div b
-      r = a mod b
+      (q, r) = divmod(a,b)
       t = x + q * y
     x = y; y = t; a = b; b = r
     oddIter = not oddIter
@@ -142,14 +141,14 @@ template modulo*[T:SomeInteger](modulus: T, body: untyped): untyped =
 
 when isMainModule:
   # https://www.khanacademy.org/computing/computer-science/cryptography/modarithmetic/a/fast-modular-exponentiation
-  assert expmod(5, 117,19) == 1
-  assert expmod(3, 1993, 17) == 14
+  doAssert expmod(5, 117,19) == 1
+  doAssert expmod(3, 1993, 17) == 14
 
-  assert invmod(42, 2017) == 1969
-  assert invmod(271, 383) == 106 # Handbook of Applied Cryptography p610
+  doAssert invmod(42, 2017) == 1969
+  doAssert invmod(271, 383) == 106 # Handbook of Applied Cryptography p610
 
-  assert expmod(5'u8, 117'u8,19'u8) == 1'u8
-  assert expmod(3'u16, 1993'u16, 17'u16) == 14'u16
+  doAssert expmod(5'u8, 117'u8,19'u8) == 1'u8
+  doAssert expmod(3'u16, 1993'u16, 17'u16) == 14'u16
 
-  assert invmod(42'u16, 2017'u16) == 1969'u16
-  assert invmod(271'u16, 383'u16) == 106'u16
+  doAssert invmod(42'u16, 2017'u16) == 1969'u16
+  doAssert invmod(271'u16, 383'u16) == 106'u16
