@@ -2,25 +2,36 @@
 # Copyright (c) 2016 Mamy Ratsimbazafy
 
 # Compiler defined const: https://github.com/nim-lang/Nim/wiki/Consts-defined-by-the-compiler
-const withBuiltins = defined(gcc) or defined(clang)
+import ./stdlib_bitops
 
-when withBuiltins:
-  proc builtin_clz(n: cuint): cint {.importc: "__builtin_clz", nodecl.}
-  proc builtin_clz(n: culong): cint {.importc: "__builtin_clzl", nodecl.}
-  proc builtin_clz(n: culonglong): cint {.importc: "__builtin_clzll", nodecl.}
-  type TbuiltinSupported = cuint or culong or culonglong
-    ## Count Leading Zero with optimized builtins routines from GCC/Clang
-    ## Warning ⚠: if n = 0, clz is undefined
+# We reuse bitops from Nim standard lib and optimize it further on x86.
+# On x86 clz it is implemented as bitscanreverse then xor and we need to again xor/sub.
+# We need the bsr instructions so we xor again hoping for the compiler to only keep 1.
 
-proc bit_length*[T: SomeInteger](n: T): T =
-  ## Calculates how many bits are necessary to represent the number
-
-  when withBuiltins and T is TbuiltinSupported:
-    result = if n == T(0): 0                    # Removing this branch would make divmod 4x faster :/
-             else: T.sizeof * 8 - builtin_clz(n)
-
+proc bit_length*(x: SomeInteger): int {.noSideEffect.}=
+  when nimvm:
+    when sizeof(x) <= 4: result = if x == 0: 0 else: fastlog2_nim(x.uint32)
+    else:                result = if x == 0: 0 else: fastlog2_nim(x.uint64)
   else:
-    var x = n
-    while x != T(0):
-      x = x shr 1
-      inc(result)
+    when useGCC_builtins:
+      when sizeof(x) <= 4: result = if x == 0: 0 else: builtin_clz(x.uint32) xor 31.cint
+      else:                result = if x == 0: 0 else: builtin_clzll(x.uint64) xor 63.cint
+    elif useVCC_builtins:
+      when sizeof(x) <= 4:
+        result = if x == 0: 0 else: vcc_scan_impl(bitScanReverse, x.culong)
+      elif arch64:
+        result = if x == 0: 0 else: vcc_scan_impl(bitScanReverse64, x.uint64)
+      else:
+        result = if x == 0: 0 else: fastlog2_nim(x.uint64)
+    elif useICC_builtins:
+      when sizeof(x) <= 4:
+        result = if x == 0: 0 else: icc_scan_impl(bitScanReverse, x.uint32)
+      elif arch64:
+        result = if x == 0: 0 else: icc_scan_impl(bitScanReverse64, x.uint64)
+      else:
+        result = if x == 0: 0 else: fastlog2_nim(x.uint64)
+    else:
+      when sizeof(x) <= 4:
+        result = if x == 0: 0 else: fastlog2_nim(x.uint32)
+      else:
+        result = if x == 0: 0 else: fastlog2_nim(x.uint64)

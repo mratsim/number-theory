@@ -125,19 +125,21 @@ proc invmod*[T:SomeInteger](a, m: T): T =
     return x
   return m - x
 
-template modulo*[T:SomeInteger](modulus: T, body: untyped): untyped =
-  # `+`, `*`, `**` and pow will be replaced by their modular version
-  template `+`(a, b: T): T =
-    addmod(a, b, `modulus`)
-  template `-`(a, b: T): T =
-    submod(a, b, `modulus`)
-  template `*`(a, b: T): T =
-    mulmod(a, b, `modulus`)
-  template `^`(a, b: T): T =
-    expmod(a, b, `modulus`)
-  template pow(a, b: T): T =
-    expmod(a, b, `modulus`)
-  body
+# The template is replacing evrything recursively, even in addmod
+# We don't want that
+# template modulo*[T:SomeInteger](modulus: T, body: untyped): untyped =
+#   # `+`, `*`, `**` and pow will be replaced by their modular version
+#   template `+`(a, b: T): T =
+#     addmod(a, b, `modulus`)
+#   template `-`(a, b: T): T =
+#     submod(a, b, `modulus`)
+#   template `*`(a, b: T): T =
+#     mulmod(a, b, `modulus`)
+#   template `^`(a, b: T): T =
+#     expmod(a, b, `modulus`)
+#   template pow(a, b: T): T =
+#     expmod(a, b, `modulus`)
+#   body
 
 when isMainModule:
   # https://www.khanacademy.org/computing/computer-science/cryptography/modarithmetic/a/fast-modular-exponentiation
