@@ -1,13 +1,12 @@
 # Number-Theory, give integers super-powers!
 
-Number-Theory is a package to provide various integer facilities:
-  - Multiprecision ints: int128, uint128, int256, uint256, ...
-  - Infinite precision ints
-  - Modular arithmetic
-  - Primes algorithms: Miller-Rabin, Efficient prime sieves, ...
-  - and more: elliptic curves, diophantine equations ...
+Number-Theory is a package collecting the [integer library](https://github.com/mratsim/nim-project-euler) I build up to solve [Project Euler](https://projecteuler.net/) problems.
 
-It is primarily driven by my need of efficient cryptography-related integer functions.
+At the moment it contains:
+  - Combinatorics: binomial coefficient computation
+  - Integer square root
+  - Modular arithmetic
+  - Primes algorithms: an optimised Sieve of Eratosthenes
 
 ## License
 
