@@ -43,7 +43,7 @@ proc doublemod[T: SomeInteger](a, m: T): T {.inline.}=
   #if a >= m - a:
   #  result -= m
   #result += a
-  result = (a shl 1) - (if a >= m shr 1: m else: 0)
+  result = (a shl 1) - (if a >= (m - a): m else: 0)
 
 proc mulmod*[T: SomeInteger](a, b, m: T): T =
   ## Modular multiplication
@@ -56,7 +56,7 @@ proc mulmod*[T: SomeInteger](a, b, m: T): T =
     if b_m.isOdd:
       result = addmod(result, a_m, m)
     #a_m = doublemod(a_m, m)
-    a_m = (a_m shl 1) - (if a_m >= m shr 1: m else: 0)
+    a_m = (a_m shl 1) - (if a_m >= (m - a): m else: 0)
     b_m = b_m shr 1
 
 proc expmod*[T: SomeInteger](base, exponent, m: T): T =
