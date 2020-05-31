@@ -1,36 +1,51 @@
 # The MIT License (MIT)
 # Copyright (c) 2016 Mamy Ratsimbazafy
 
-import ./integer_math
+import
+  std/bitops,
+  ./integer_math
 
 type
-  Base = seq[byte]
-  BitVector = distinct Base
+  Base = uint64
+  ByteSeq = seq[Base]
+  BitSeq = distinct ByteSeq
 
-proc `[]`(b: BitVector, i: Natural): bool {.noSideEffect, inline.}=
-  bool Base(b)[i shr 3] shr (i and 7) and 1
+const
+  Shift = fastLog2(sizeof(Base) * 8)
+  Mask = sizeof(Base) * 8 - 1
 
-proc bv_set(b: var BitVector, i: Natural) {.noSideEffect, inline.}=
-  var w = addr Base(b)[i shr 3]
-  w[] = w[] or byte(1 shl (i and 7)) # bit hack to set bit to 1
+func `[]`(bs: BitSeq, i: int): bool =
+  bool ByteSeq(bs)[i shr Shift] shr (i and Mask) and 1
+
+func setBit(bs: var BitSeq, i: int) =
+  template pos: untyped = ByteSeq(bs)[i shr Shift]
+  pos = pos or uint64(1 shl (i and Mask))
 
 # To limit initialization time, primes will be with value 0 in the bit array
 # Non-prime will be with value 1
-proc primeSieve*(n: range[2..high(int)]): seq[int] =
-  var sieve = newSeq[byte](n shr 3 + 1).BitVector
-  let maxn = (n - 1) shr 1
-  let sqn = isqrt(n) shr 1
+func primeSieve*(n: int): seq[int] =
+  ## Sieve of Erastosthenes
+  # Look Ma! no trial division
+  doAssert n > 2
+
+  var sieve = newSeq[uint64](n shr Shift + 1).BitSeq
+  let max_n = (n-1) shr 1
+  let sqr_n = isqrt(n) shr 1
 
   result = @[2]
 
-  for i in 1 .. sqn:
+  # 1. Cross-off multiples
+  for i in 1 .. sqr_n:
     if not sieve[i]:
       let prime = i shl 1 + 1
       result.add prime
-      for j in countup((prime*prime) shr 1, maxn, prime): # cross off multiples from i^2 to n, increment by i^2 + 2i because i^2+i is even
-        sieve.bv_set(j)
+      for j in countup((prime*prime) shr 1, max_n, prime):
+        # Cross-off multiples from i^2 to n
+        # increment by i^2 + 2i because i^2+i is even
+        sieve.setBit(j)
 
-  for i in sqn+1 .. maxn:
+  # 2. Everything left in √n .. n is also a prime
+  for i in sqr_n+1 .. max_n:
     if not sieve[i]:
       result.add(i shl 1 + 1)
 

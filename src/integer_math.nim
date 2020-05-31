@@ -1,7 +1,7 @@
 # The MIT License (MIT)
 # Copyright (c) 2016 Mamy Ratsimbazafy
 
-from ./private/bithacks import bit_length
+import std/bitops
 
 proc isOdd*[T: SomeInteger](i: T): bool {.inline, noSideEffect.}= (i and 1) != 0
 proc isEven*[T: SomeInteger](i: T): bool {.inline, noSideEffect.}= (i and 1) == 0
@@ -10,7 +10,7 @@ proc isqrt*[T: SomeInteger](n: T):  T {.noSideEffect.}=
   ## Integer square root, return the biggest squarable number under n
   ## Computation via Newton method
   result = n
-  var y = (2.T shl ((n.bit_length + 1) shr 1)) - 1
+  var y = (2.T shl ((n.fastLog2() + 1) shr 1)) - 1
   while y < result:
     result = y
     y = (result + n div result) shr 1
